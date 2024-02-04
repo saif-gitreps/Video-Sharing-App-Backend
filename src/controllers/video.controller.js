@@ -9,6 +9,8 @@ const {
    retrievePublicIdFromUrl,
 } = require("../utils/cloudinary");
 
+// task left : add left join for likes and comments on videos.
+
 const getAllVideos = asyncHandler(async (req, res) => {
    const { page = 1, limit = 12, query, sortBy, sortType, userId } = req.body;
 
@@ -179,9 +181,6 @@ const getVideo = asyncHandler(async (req, res) => {
             },
             numberOfLikes: {
                $size: "$likesOnTheVideo",
-            },
-            numberOfLikes: {
-               $first: "$numberOfLikes",
             },
          },
       },

@@ -27,6 +27,6 @@ const likeSchema = new mongoose.Schema(
 
 //likeSchema.plugin(mongooseAggregatePaginate);
 
-const Like = mongoose.model.Schema("Like", likeSchema);
+const Like = mongoose.model("Like", likeSchema);
 
 module.exports = Like;

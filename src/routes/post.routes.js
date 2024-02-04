@@ -6,10 +6,14 @@ router.use(verifyJWT);
 
 router.route("/:userId").get(postControllers.getUserPosts);
 
-router.route("/").post();
+// task to add: search post by a query.
 
-router.route("/").patch();
+router.route("/").post(postControllers.addPost);
 
-router.route("/").delete();
+//router.route("/:postId").get();
+
+router.route("/:postId").patch(postControllers.updatePost);
+
+router.route("/:postId").delete(postControllers.deletePost);
 
 module.exports = router;

@@ -14,8 +14,10 @@ app.use(cookieParser());
 
 const userRoutes = require("./routes/user.routes");
 const videoRoutes = require("./routes/video.routes");
+const postRoutes = require("./routes/post.routes");
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/videos", videoRoutes);
+app.use("/api/v1/posts", postRoutes);
 
 module.exports = app;
