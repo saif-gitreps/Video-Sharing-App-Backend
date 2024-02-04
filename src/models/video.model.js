@@ -20,7 +20,7 @@ const videoSchema = new mongoose.Schema(
          required: true,
       },
       duration: {
-         type: Number, // cloudinary url <- from the video file info we will take this info
+         type: Number, // will bring this from cloudinary response object.
          default: 10,
       },
       views: {

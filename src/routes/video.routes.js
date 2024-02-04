@@ -3,8 +3,6 @@ const videoController = require("../controllers/video.controller");
 const upload = require("../middlewares/multer.middleware");
 const verifyJWT = require("../middlewares/auth.middleware");
 
-//unprotected routes.
-
 router.use(verifyJWT);
 
 //protected routes.

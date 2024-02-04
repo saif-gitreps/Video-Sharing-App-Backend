@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+//const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const likeSchema = new mongoose.Schema(
    {
@@ -10,9 +11,9 @@ const likeSchema = new mongoose.Schema(
          type: mongoose.Schema.Types.ObjectId,
          ref: "Comment",
       },
-      tweet: {
+      post: {
          type: mongoose.Schema.Types.ObjectId,
-         ref: "Tweet",
+         ref: "Post",
       },
       likedBy: {
          type: mongoose.Schema.Types.ObjectId,
@@ -23,6 +24,8 @@ const likeSchema = new mongoose.Schema(
       timestamps: true,
    }
 );
+
+//likeSchema.plugin(mongooseAggregatePaginate);
 
 const Like = mongoose.model.Schema("Like", likeSchema);
 

@@ -10,12 +10,11 @@ const {
 } = require("../utils/cloudinary");
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.body;
-   //TODO: get all videos based on query, sort, pagination
+   const { page = 1, limit = 12, query, sortBy, sortType, userId } = req.body;
 
-   // sort types: views, createdAt, duration, title.
+   // sort types: views, createdAt, duration, title + isPublished videos only.
    const skip = (page - 1) * limit;
-   
+
    const match = {};
    if (query) {
       match.$text = { $search: query };
@@ -47,9 +46,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
          $limit: limit,
       },
       {
-         /*
-         In MongoDB aggregation, the $lookup stage is used primarily when you need to perform a left outer join with documents from another collection. It's useful when you want to enrich your documents with additional data that is not directly present in the current collection.
-         */
          $lookup: {
             from: "users",
             localField: "owner",
@@ -58,16 +54,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
          },
       },
       {
-         /*
-         The $unwind stage is typically used when you have an array field in your documents and you want to "flatten" or deconstruct that array field into multiple documents, each containing one element of the array. This is useful when you want to perform operations or projections on individual elements of the array.
-
-         In your case, the $lookup stage joins documents from the "users" collection with documents from the "videos" collection based on the owner field. After the $lookup stage, the owner field becomes an array of user documents.
-
-         The $unwind stage is used to deconstruct this array field owner into multiple documents, each containing one user document. This allows subsequent stages, such as $project, to access and manipulate fields within the owner array.
-
-         However, if you're certain that each document in your "videos" collection has only one corresponding user document in the "users" collection (i.e., the owner field is not an array, but a single reference to a user document), then using $unwind is not strictly necessary.
-         */
-         // comment this unwind and console.log the videos to see the difference
+         // another way of de constructing the array it seems.
          $unwind: "$owner",
       },
       {
@@ -97,7 +84,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 const publishAVideo = asyncHandler(async (req, res) => {
    const { title, description } = req.body;
-   // we will get thumbnail and the video using multer
+
    if (!title && !description) {
       throw new ApiError(400, "Title and Description are required.");
    }
@@ -142,8 +129,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideo = asyncHandler(async (req, res) => {
    const { videoId } = req.params;
-   // we will get all info about the video along with owner informations,
-   // all the comments and likes (in numbers).
 
    // task left in this controller: after making likes and comments controller , convert the result to
    // object.
@@ -188,8 +173,6 @@ const getVideo = asyncHandler(async (req, res) => {
          },
       },
       {
-         // so this is the technique we use to deconstruct a single element array into its single object
-         // something like [result: {1,2,3}] to result: {1,2,3}
          $addFields: {
             owner: {
                $first: "$owner",
@@ -263,7 +246,7 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
 
    if (video.thumbnail) {
       await deleteFromCloudinary(
-         // i made this alogorithm.
+         // made this alogorithm hehe and it works great.
          retrievePublicIdFromUrl(video.thumbnail).trim()
       );
    }

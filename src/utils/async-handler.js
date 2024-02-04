@@ -7,7 +7,6 @@ const asyncHandler = (requestHandler) => {
 
 module.exports = asyncHandler;
 
-// another way is to use asyn await, for that we one step deeper function.
 const asyncHandler2 = (fn) => async (req, res, next) => {
    try {
       await fn(req, res, next);
@@ -19,7 +18,6 @@ const asyncHandler2 = (fn) => async (req, res, next) => {
    }
 };
 
-// more simplified way of this wrapper.
 function asyncHandler3(fn) {
    return async function (req, res, next) {
       try {

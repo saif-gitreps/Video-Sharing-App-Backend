@@ -12,24 +12,17 @@ const uploadOnCloudinary = async (localFilePath) => {
       if (!localFilePath) {
          return null;
       }
-      // next step upload the file on cloudinary.
       const response = await cloudinary.uploader.upload(localFilePath, {
-         // could be anything like img,vid, so put auto.
          resource_type: "auto",
       });
       console.log("File uploaded on cloudinary: " + response.url);
       fs.unlinkSync(localFilePath);
       return response;
    } catch (error) {
-      // fs has this unlink option. this will remove the locally saved temporary file
-      // as the upload operation got failed.
-      // unlink is deleting the file.
-      fs.unlinkSync(localFilePath);
+      fs.unlinkSync(localFilePath); // removing from our public folder after cloud upload.
       return null;
    }
 };
-
-// to delete a file from cloudinary
 
 const deleteFromCloudinary = async (cloudinaryPublicId) => {
    // cloudinary.v2.api
