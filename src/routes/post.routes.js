@@ -10,7 +10,7 @@ router.route("/:userId").get(postControllers.getUserPosts);
 
 router.route("/").post(postControllers.addPost);
 
-//router.route("/:postId").get();
+router.route("/post-details/:postId").get(postControllers.getPostDetails);
 
 router.route("/:postId").patch(postControllers.updatePost);
 

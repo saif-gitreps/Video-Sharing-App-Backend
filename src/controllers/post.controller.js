@@ -50,6 +50,66 @@ const getUserPosts = asyncHandler(async (req, res) => {
    return res.status(200).json(new ApiResponse(200, posts, "Posts fetched successfully"));
 });
 
+const getPostDetails = asyncHandler(async (req, res) => {
+   const { postId } = req.params;
+
+   const post = await Post.aggregate([
+      {
+         $match: {
+            _id: new mongoose.Types.ObjectId(postId),
+         },
+      },
+      {
+         $lookup: {
+            from: "likes",
+            foreignField: "post",
+            localField: "_id",
+            as: "likesOnThePost",
+         },
+      },
+      {
+         $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner",
+            pipeline: [
+               {
+                  $project: {
+                     // taking username and not _id as params because when visiting channel
+                     // we use username in the url
+                     username: 1,
+                     avatar: 1,
+                     _id: 0,
+                  },
+               },
+            ],
+         },
+      },
+      {
+         $addFields: {
+            owner: {
+               $first: "$owner",
+            },
+            numberOfLikes: {
+               $size: "$likesOnThePost",
+            },
+         },
+      },
+      {
+         $unset: "likesOnThePost",
+      },
+   ]);
+
+   if (!post || !post.length) {
+      throw new ApiError(404, "No such post exist");
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, post[0], "Post fectched successfully"));
+});
+
 const addPost = asyncHandler(async (req, res) => {
    const { content } = req.body;
 
@@ -94,6 +154,7 @@ const deletePost = asyncHandler(async (req, res) => {
 
 module.exports = {
    getUserPosts,
+   getPostDetails,
    addPost,
    updatePost,
    deletePost,
