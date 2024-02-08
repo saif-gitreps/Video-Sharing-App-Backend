@@ -1,8 +1,6 @@
 const asyncHandler = require("../utils/async-handler");
-const ApiError = require("../utils/ApiError");
 const Subscription = require("../models/subscription.model");
 const ApiResponse = require("../utils/ApiResponse");
-const mongoose = require("mongoose");
 
 const subOrUnsubAchannel = asyncHandler(async (req, res) => {
    const { channelId } = req.params;
