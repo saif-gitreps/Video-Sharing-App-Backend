@@ -6,7 +6,7 @@ const Post = require("../models/post.model");
 const ApiResponse = require("../utils/ApiResponse");
 const mongoose = require("mongoose");
 
-const getLikedVideo = asyncHandler(async (req, res) => {
+const getLikedVideos = asyncHandler(async (req, res) => {
    const userId = req.user._id;
 
    const likedVideos = await Like.aggregate([
@@ -61,4 +61,89 @@ const getLikedVideo = asyncHandler(async (req, res) => {
          },
       },
    ]);
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, likedVideos, "User likes videos fetched successfully"));
 });
+
+const getLikedPosts = asyncHandler(async (req, res) => {});
+
+const likeUnlikeVideo = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+
+   let videoToLike = await Like.findOne({
+      $and: [{ video: videoId }, { likedBy: req.user?._id }],
+   });
+
+   if (!videoToLike) {
+      videoToLike = await Like.create({
+         likedBy: req.user._id,
+         video: videoId,
+      });
+   } else {
+      videoToLike = await Like.findByIdAndDelete(videoToLike._id, {
+         new: true,
+      });
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, videoToLike, "Like on the video toggled successfully"));
+});
+
+const likeUnlikePost = asyncHandler(async (req, res) => {
+   const { postId } = req.params;
+
+   let postToLike = await Like.findOne({
+      $and: [{ post: postId }, { likedBy: req.user?._id }],
+   });
+
+   if (!postToLike) {
+      postToLike = await Like.create({
+         likedBy: req.user._id,
+         post: postId,
+      });
+   } else {
+      postToLike = await Like.findByIdAndDelete(postToLike._id, {
+         new: true,
+      });
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, postToLike, "Like on the post toggled successfully"));
+});
+
+const likeUnlikeComment = asyncHandler(async (req, res) => {
+   const { commentId } = req.params;
+
+   let commentToLike = await Like.findOne({
+      $and: [{ comment: commentId }, { likedBy: req.user?._id }],
+   });
+
+   if (!commentToLike) {
+      commentToLike = await Like.create({
+         likedBy: req.user._id,
+         comment: commentId,
+      });
+   } else {
+      commentToLike = await Like.findByIdAndDelete(commentToLike._id, {
+         new: true,
+      });
+   }
+
+   return res
+      .status(200)
+      .json(
+         new ApiResponse(200, commentToLike, "Like on the comment toggled successfully")
+      );
+});
+
+module.exports = {
+   getLikedVideos,
+   getLikedPosts,
+   likeUnlikeVideo,
+   likeUnlikePost,
+   likeUnlikeComment,
+};
