@@ -67,7 +67,64 @@ const getLikedVideos = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, likedVideos, "User likes videos fetched successfully"));
 });
 
-const getLikedPosts = asyncHandler(async (req, res) => {});
+const getLikedPosts = asyncHandler(async (req, res) => {
+   const userId = req.user._id;
+
+   const likedPosts = await Like.aggregate([
+      {
+         $match: {
+            likedBy: new mongoose.Types.ObjectId(userId),
+         },
+      },
+      {
+         $lookup: {
+            from: "posts",
+            localField: "post",
+            foreignField: "_id",
+            as: "post",
+            pipeline: [
+               {
+                  $lookup: {
+                     from: "users",
+                     localField: "owner",
+                     foreignField: "_id",
+                     as: "owner",
+                     pipeline: [
+                        {
+                           $project: {
+                              username: 1,
+                              avatar: 1,
+                           },
+                        },
+                     ],
+                  },
+               },
+               {
+                  $unwind: "$owner",
+               },
+            ],
+         },
+      },
+      {
+         $unwind: "$post",
+      },
+      {
+         $project: {
+            _id: 0,
+            post: {
+               _id: 1,
+               content: 1,
+               createdAt: 1,
+               owner: 1,
+            },
+         },
+      },
+   ]);
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, likedPosts, "User likes posts fetched successfully"));
+});
 
 const likeUnlikeVideo = asyncHandler(async (req, res) => {
    const { videoId } = req.params;

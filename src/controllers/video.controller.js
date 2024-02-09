@@ -161,16 +161,16 @@ const getVideo = asyncHandler(async (req, res) => {
       {
          $lookup: {
             from: "comments",
-            foreignField: "_id",
-            localField: "video",
+            foreignField: "video",
+            localField: "_id",
             as: "commentsOnTheVideo",
          },
       },
       {
          $lookup: {
             from: "likes",
-            foreignField: "_id",
-            localField: "video",
+            foreignField: "video",
+            localField: "_id",
             as: "likesOnTheVideo",
          },
       },
@@ -183,6 +183,9 @@ const getVideo = asyncHandler(async (req, res) => {
                $size: "$likesOnTheVideo",
             },
          },
+      },
+      {
+         $unset: "likesOnTheVideo",
       },
    ]);
 
