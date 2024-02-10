@@ -1,8 +1,6 @@
 const asyncHandler = require("../utils/async-handler");
 const ApiError = require("../utils/ApiError");
 const Like = require("../models/likes.model");
-const Video = require("../models/video.model");
-const Post = require("../models/post.model");
 const ApiResponse = require("../utils/ApiResponse");
 const mongoose = require("mongoose");
 
@@ -21,27 +19,6 @@ const getLikedVideos = asyncHandler(async (req, res) => {
             localField: "video",
             foreignField: "_id",
             as: "video",
-            pipeline: [
-               {
-                  $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
-                     as: "owner",
-                     pipeline: [
-                        {
-                           $project: {
-                              username: 1,
-                              avatar: 1,
-                           },
-                        },
-                     ],
-                  },
-               },
-               {
-                  $unwind: "$owner",
-               },
-            ],
          },
       },
       {
@@ -53,14 +30,16 @@ const getLikedVideos = asyncHandler(async (req, res) => {
             video: {
                _id: 1,
                title: 1,
-               views: 1,
                thumbnail: 1,
                createdAt: 1,
-               owner: 1,
             },
          },
       },
    ]);
+
+   if (!likedVideos) {
+      throw new ApiError(404, "No liked videos found");
+   }
 
    return res
       .status(200)
@@ -120,6 +99,10 @@ const getLikedPosts = asyncHandler(async (req, res) => {
          },
       },
    ]);
+
+   if (!likedPosts) {
+      throw new ApiError(404, "No liked posts found");
+   }
 
    return res
       .status(200)

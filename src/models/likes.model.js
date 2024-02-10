@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-//const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const likeSchema = new mongoose.Schema(
    {
@@ -25,7 +25,7 @@ const likeSchema = new mongoose.Schema(
    }
 );
 
-//likeSchema.plugin(mongooseAggregatePaginate);
+likeSchema.plugin(mongooseAggregatePaginate);
 
 const Like = mongoose.model("Like", likeSchema);
 

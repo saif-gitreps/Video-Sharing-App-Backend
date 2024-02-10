@@ -119,7 +119,7 @@ const addPost = asyncHandler(async (req, res) => {
    });
 
    if (!post) {
-      throw new ApiError(400, "Failure during creation of post.");
+      throw new ApiError(500, "Failure during creation of post.");
    }
 
    return res.status(200).json(new ApiResponse(200, post, "Post created successfully"));
@@ -138,7 +138,7 @@ const updatePost = asyncHandler(async (req, res) => {
    );
 
    if (!post) {
-      throw new ApiError(400, "Failure during updation of post.");
+      throw new ApiError(500, "Failure during updation of post.");
    }
 
    return res.status(200).json(new ApiResponse(200, post, "Post updated successfully"));
@@ -148,6 +148,10 @@ const deletePost = asyncHandler(async (req, res) => {
    const { postId } = req.params;
 
    const post = await Post.findByIdAndDelete(postId, { new: true });
+
+   if (!post) {
+      throw new ApiError(500, "Failure during deletion of post.");
+   }
 
    return res.status(200).json(new ApiResponse(200, post, "Post deleted successfully"));
 });

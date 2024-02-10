@@ -10,8 +10,8 @@ router.route("/toggle/post/:postId").post(likeControllers.likeUnlikePost);
 
 router.route("/toggle/comment/commentId").post(likeControllers.likeUnlikeComment);
 
-router.route("/video").get(likeControllers.getLikedVideos);
+router.route("/videos").get(likeControllers.getLikedVideos);
 
-router.route("/post").get(likeControllers.getLikedPosts);
+router.route("/posts").get(likeControllers.getLikedPosts);
 
 module.exports = router;
