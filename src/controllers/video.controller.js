@@ -164,6 +164,17 @@ const getVideo = asyncHandler(async (req, res) => {
             foreignField: "video",
             localField: "_id",
             as: "commentsOnTheVideo",
+            // wont undwind this cuz i need the array of comments.
+            pipeline: [
+               {
+                  $project: {
+                     _id: 1,
+                     comment: 1,
+                     owner: 1,
+                     createdAt: 1,
+                  },
+               },
+            ],
          },
       },
       {

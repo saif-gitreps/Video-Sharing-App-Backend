@@ -9,7 +9,7 @@ const createCommentOnVideo = asyncHandler(async (req, res) => {
    const { content } = req.body;
    const userId = req.user._id;
 
-   const comment = new Comment.create({
+   const comment = await Comment.create({
       video: videoId,
       content: content,
       owner: userId,
@@ -29,7 +29,7 @@ const createCommentOnPost = asyncHandler(async (req, res) => {
    const { content } = req.body;
    const userId = req.user._id;
 
-   const comment = new Comment.create({
+   const comment = await Comment.create({
       post: postId,
       content: content,
       owner: userId,

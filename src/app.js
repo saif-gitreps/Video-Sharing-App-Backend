@@ -19,6 +19,7 @@ const subscriptionRoutes = require("./routes/subscription.routes");
 const likeRoutes = require("./routes/like.routes");
 const commentRoutes = require("./routes/comment.routes");
 
+// api to add, add get user uploaded video.
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/videos", videoRoutes);
 app.use("/api/v1/posts", postRoutes);
