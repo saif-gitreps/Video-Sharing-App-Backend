@@ -9,9 +9,7 @@ Welcome to the backend server for our video streaming site! The server is made w
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-  - [RESTful APIs](#restful-apis)
-- [Contributing](#contributing)
-- [License](#license)
+- [RESTful APIs](#restful-apis)
 
 ## Features
 
@@ -76,7 +74,7 @@ CLOUDINARY_API_SECRET= <paste it from your cloudinary account>
 ```
 
 
-Usage
+## Usage
 To start the server, run the following command:
 
 ```
@@ -85,49 +83,6 @@ npm start
 
 Once the server runs, you can start making API requests to interact with the platform.
 
-RESTful APIs
-Our backend server follows RESTful API principles, allowing clients to interact with the server through standard HTTP methods such as GET, POST, PUT, and DELETE. Below are the available endpoints and their corresponding functionalities:
+## RESTful APIs
+The backend server follows RESTful API principles, allowing the front-end to make proper calls to the server. The API URL's can be accessed in the routes folder of each collection type. 
 
-User Authentication
-```
-POST /api/auth/signup: Register a new user.
-POST /api/auth/login: Log in an existing user.
-```
-Video Management
-```
-GET /api/videos: Retrieve all videos.
-GET /api/videos/:id: Retrieve a specific video by ID.
-POST /api/videos: Upload a new video.
-PUT /api/videos/:id: Update an existing video.
-DELETE /api/videos/:id: Delete a video.
-```
-Playlist Management
-```
-GET /api/playlists: Retrieve all playlists.
-GET /api/playlists/:id: Retrieve a specific playlist by ID.
-POST /api/playlists: Create a new playlist.
-PUT /api/playlists/:id: Update an existing playlist.
-DELETE /api/playlists/:id: Delete a playlist.
-```
-Community Posts
-```
-GET /api/posts: Retrieve all community posts.
-GET /api/posts/:id: Retrieve a specific post by ID.
-POST /api/posts: Create a new post.
-PUT /api/posts/:id: Update an existing post.
-DELETE /api/posts/:id: Delete a post.
-```
-Comments
-```
-GET /api/comments: Retrieve all comments.
-GET /api/comments/:id: Retrieve a specific comment by ID.
-POST /api/comments: Create a new comment.
-PUT /api/comments/:id: Update an existing comment.
-DELETE /api/comments/:id: Delete a comment.
-```
-Likes
-```
-POST /api/videos/:id/like: Like a video.
-POST /api/posts/:id/like: Like a post.
-POST /api/comments/:id/like: Like a comment.
-```
