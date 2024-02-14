@@ -167,10 +167,25 @@ const getVideo = asyncHandler(async (req, res) => {
             // wont undwind this cuz i need the array of comments.
             pipeline: [
                {
+                  $lookup: {
+                     from: "users",
+                     localField: "owner",
+                     foreignField: "_id",
+                     as: "owner",
+                  },
+               },
+               {
+                  $unwind: "$owner",
+               },
+               {
                   $project: {
                      _id: 1,
-                     comment: 1,
-                     owner: 1,
+                     content: 1,
+                     owner: {
+                        _id: 1,
+                        username: 1,
+                        avatar: 1,
+                     },
                      createdAt: 1,
                   },
                },
