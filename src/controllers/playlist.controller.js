@@ -8,6 +8,10 @@ const mongoose = require("mongoose");
 const createPlaylist = asyncHandler(async (req, res) => {
    const { name, description } = req.body;
 
+   if (!name || !description) {
+      throw new ApiError(401, "Name and description are required.");
+   }
+
    let playlist = new Playlist({
       name: name,
       description: description,
@@ -30,7 +34,7 @@ const getPlaylist = asyncHandler(async (req, res) => {
    const playlist = await Playlist.aggregate([
       {
          $match: {
-            _id: mongoose.Types.ObjectId(playlistId),
+            _id: new mongoose.Types.ObjectId(playlistId),
          },
       },
       {
@@ -55,18 +59,22 @@ const getPlaylist = asyncHandler(async (req, res) => {
       },
    ]);
 
-   if (!playlist) {
+   if (!playlist || playlist.length === 0) {
       throw new ApiError(404, "Playlist not found.");
    }
 
    return res
       .status(200)
-      .json(new ApiResponse(200, playlist, "Playlist retrieved successfully."));
+      .json(new ApiResponse(200, playlist[0], "Playlist retrieved successfully."));
 });
 
 const updatePlaylist = asyncHandler(async (req, res) => {
    const { playlistId } = req.params;
    const { name, description } = req.body;
+
+   if (!name || !description) {
+      throw new ApiError(401, "Name and description are required.");
+   }
 
    const playlist = await Playlist.findOneAndUpdate(
       { _id: playlistId, owner: req.user._id },
@@ -80,7 +88,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200, "Playlist updated successfully.", playlist));
+      .json(new ApiResponse(200, playlist, "Playlist updated successfully."));
 });
 
 const deletePlaylist = asyncHandler(async (req, res) => {
@@ -104,10 +112,13 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
    const { playlistId, videoId } = req.params;
 
    const video = await Video.findById(videoId);
-   const playlist = await Playlist.findById(playlistId);
+   let playlist = await Playlist.findById(playlistId);
 
-   if (!video || !playlist) {
-      throw new ApiError(404, "Video not found.");
+   if (!playlist) {
+      throw new ApiError(404, "Playlist not found.");
+   }
+   if (!video) {
+      throw new ApiError(404, "No such video exists.");
    }
 
    for (let i = 0; i < playlist.videos.length; i++) {
@@ -120,10 +131,6 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 
    playlist = await playlist.save();
 
-   if (!playlist) {
-      throw new ApiError(404, "Playlist not found.");
-   }
-
    return res
       .status(200)
       .json(new ApiResponse(200, playlist, "Video added to playlist successfully."));
@@ -132,10 +139,8 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
    const { playlistId, videoId } = req.params;
 
-   let [playlist, video] = await Promise.all([
-      Playlist.findById(playlistId),
-      Video.findById(videoId),
-   ]);
+   const video = await Video.findById(videoId);
+   let playlist = await Playlist.findById(playlistId);
 
    if (!playlist) {
       throw new ApiError(404, "Playlist not found.");
@@ -149,16 +154,16 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
    }
 
    playlist = await Playlist.findByIdAndUpdate(
-      { playlistId },
+      playlistId,
       {
-         $pull: { videos: videoId },
+         $pull: { videos: new mongoose.Types.ObjectId(videoId) },
       },
       { new: true }
    );
 
    return res
       .status(200)
-      .json(new ApiResponse(200, "Video removed from playlist successfully.", playlist));
+      .json(new ApiResponse(200, playlist, "Video removed from playlist successfully."));
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {

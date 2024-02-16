@@ -4,13 +4,11 @@ const commentControllers = require("../controllers/comment.controller");
 
 router.use(verifyJWT);
 
-router.post("/video/:videoId", verifyJWT, commentControllers.createCommentOnVideo);
-
 router.post("/post/:postId", verifyJWT, commentControllers.createCommentOnPost);
+router.get("/post/:postId", commentControllers.getCommentsOnPost);
 
 router.get("/video/:videoId", commentControllers.getCommentsOnVideo);
-
-router.get("/post/:postId", commentControllers.getCommentsOnPost);
+router.post("/video/:videoId", verifyJWT, commentControllers.createCommentOnVideo);
 
 router.delete("/:commentId", verifyJWT, commentControllers.deleteComment);
 
