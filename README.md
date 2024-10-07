@@ -1,6 +1,6 @@
-# Video Streaming Site Backend
+# Video Sharing Application Backend
 
-Welcome to the backend server for our video streaming site! The server is made with Express.js and MongoDB Aggregation pipelining. Mongoose was the framework used for data models and it follows the MVC pattern structure to provide a robust platform and secure server for users to interact with video content, create playlists, engage in community discussions, and much more. 
+Backend API server for the video-sharing social media application built with **Express.js** and utilizes **MongoDB** aggregation pipelining. **Mongoose** was used for data modeling, following the MVC pattern structure to provide a robust platform and secure server for users to interact with video content, create playlists, engage in community discussions, and much more.
 
 ## Table of Contents
 
@@ -13,17 +13,15 @@ Welcome to the backend server for our video streaming site! The server is made w
 
 ## Features
 
-Our backend server offers the following features:
-
-- User authentication: Users can sign up, log in, and manage their accounts securely.
-- Users can also subscribe to other channels or become a channel.
-- Video upload: Users can upload videos to the platform using the Multer library.
-- CRUD operations on videos: Users can create, read, update, and delete videos.
-- Uploaded videos, avatars, and cover-photos are stored publicly using Cloudinary.
-- Playlist management: Users can create playlists, add videos, and manage playlist contents.
-- Community posts: Users can create posts, engage in discussions, and interact with other users' posts.
-- Comments and likes: Users can comment on videos, and posts, and engage with content by liking them.
-- Use of cookies and JWT for added security measures.
+- 🔒 **User Authentication:** Stateless Authentication with JWT. Users can sign up, log in, and manage their accounts securely.
+- 📺 **Channel Subscription:** Users can subscribe to other channels or become a channel themselves.
+- 📤 **Video Upload:** Users can upload videos to the platform using the **Multer** library.
+- ✨ **CRUD Operations on Videos:** Users can create, read, update, and delete videos.
+- ☁️ **Cloud Storage:** Uploaded videos, avatars, and cover photos are stored publicly using **Cloudinary**.
+- 📚 **Playlist Management:** Users can create playlists, add videos, and manage playlist content.
+- 💬 **Community Posts:** Users can create posts, engage in discussions, and interact with other users' posts.
+- 💖 **Comments and Likes:** Users can comment on videos and posts, and engage with content by liking them.
+- 🍪 **Security:** Utilizes cookies and JWT for enhanced security measures.
 
 ## Prerequisites
 
@@ -80,8 +78,6 @@ To start the server, run the following command:
 ```
 npm start
 ```
-
-Once the server runs, you can start making API requests to interact with the platform.
 
 ## RESTful APIs
 The backend server follows RESTful API principles, allowing the front-end to make proper calls to the server. The API URL's can be accessed in the routes folder of each collection type. 
