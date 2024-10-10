@@ -23,6 +23,11 @@ Backend API server for the video-sharing social media application built with **E
 - 💖 **Comments and Likes:** Users can comment on videos and posts, and engage with content by liking them.
 - 🍪 **Security:** Utilizes cookies and JWT for enhanced security measures.
 
+<!---
+your comment goes here
+and here
+
+
 ## Prerequisites
 
 Before setting up the server, ensure you have the following prerequisites:
@@ -82,3 +87,4 @@ npm start
 ## RESTful APIs
 The backend server follows RESTful API principles, allowing the front-end to make proper calls to the server. The API URL's can be accessed in the routes folder of each collection type. 
 
+-->
