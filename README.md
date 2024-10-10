@@ -2,15 +2,15 @@
 
 Backend API server for the video-sharing social media application built with **Express.js** and utilizes **MongoDB** aggregation pipelining. **Mongoose** was used for data modeling, following the MVC pattern structure to provide a robust platform and secure server for users to interact with video content, create playlists, engage in community discussions, and much more.
 
+<!---
 ## Table of Contents
-
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [RESTful APIs](#restful-apis)
-
+-->
 ## Features
 
 - 🔒 **User Authentication:** Stateless Authentication with JWT. Users can sign up, log in, and manage their accounts securely.
