@@ -23,9 +23,7 @@ router.route("/").post(
 );
 
 router.route("/:videoId").get(videoController.getVideo);
-
 router.route("/:videoId").delete(videoController.deleteVideo);
-
 router
    .route("/:videoId")
    .patch(upload.single("thumbnail"), videoController.updateVideoThumbnail);
