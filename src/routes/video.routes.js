@@ -8,6 +8,8 @@ router.use(verifyJWT);
 //protected routes.
 router.route("/").get(videoController.getAllVideos);
 
+router.route("/subbed-channels").get(videoController.getSubscribedChannelsVideos);
+
 router.route("/").post(
    upload.fields([
       {

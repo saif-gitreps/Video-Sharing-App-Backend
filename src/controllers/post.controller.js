@@ -156,10 +156,82 @@ const deletePost = asyncHandler(async (req, res) => {
    return res.status(200).json(new ApiResponse(200, post, "Post deleted successfully"));
 });
 
+const getSubbedChannelsPosts = asyncHandler(async (req, res) => {
+   const { page = 1, limit = 6 } = req.params;
+
+   const skip = (page - 1) * limit;
+
+   const posts = await Post.aggregate([
+      {
+         $lookup: {
+            from: "subscriptions",
+            let: { postOwnerId: "$owner" },
+            pipeline: [
+               {
+                  $match: {
+                     $expr: {
+                        $and: [
+                           { $eq: ["$subscriber", req.user._id] },
+                           { $eq: ["$channel", "$$postOwnerId"] },
+                        ],
+                     },
+                  },
+               },
+            ],
+            as: "subscriptions",
+         },
+      },
+      // Only keep posts where there is at least one matching subscription
+      {
+         $match: {
+            $or: [{ subscriptions: { $ne: [] } }, { owner: { $eq: req.user._id } }],
+         },
+      },
+      {
+         $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "ownerDetails",
+         },
+      },
+      {
+         $unwind: "$ownerDetails",
+      },
+      {
+         $project: {
+            _id: 1,
+            content: 1,
+            owner: 1,
+            ownerDetails: {
+               username: 1,
+               avatar: 1,
+            },
+            createdAt: 1,
+            updatedAt: 1,
+         },
+      },
+      {
+         $sort: { createdAt: 1 },
+      },
+      {
+         $skip: skip,
+      },
+      {
+         $limit: limit,
+      },
+   ]);
+
+   console.log(posts);
+
+   return res.status(200).json(new ApiResponse(200, posts, "Posts fetched successfully"));
+});
+
 module.exports = {
    getUserPosts,
    getPostDetails,
    addPost,
    updatePost,
    deletePost,
+   getSubbedChannelsPosts,
 };

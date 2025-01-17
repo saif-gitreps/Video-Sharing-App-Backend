@@ -6,6 +6,8 @@ router.use(verifyJWT);
 
 router.route("/user/:userId").get(postControllers.getUserPosts);
 
+router.route("/").get(postControllers.getSubbedChannelsPosts);
+
 // task to add: search post by a query.
 
 router.route("/").post(postControllers.addPost);

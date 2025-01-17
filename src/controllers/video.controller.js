@@ -12,7 +12,7 @@ const {
 // task left : add left join for likes and comments on videos.
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 3, query, sortBy, sortType, userId } = req.body;
+   const { page = 1, limit = 3, query, sortBy, sortType, userId } = req.params;
 
    // sort types: views, createdAt, duration, title + isPublished videos only.
    const skip = (page - 1) * limit;
@@ -82,6 +82,100 @@ const getAllVideos = asyncHandler(async (req, res) => {
    return res
       .status(200)
       .json(new ApiResponse(200, videos, "Successfully fetched videos based on query."));
+});
+
+const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
+   const { page = 1, limit = 3, query, sortBy, sortType } = req.params;
+
+   const skip = (page - 1) * limit;
+
+   const match = { isPublished: true };
+   if (query) {
+      match.$text = { $search: query };
+   }
+
+   const sort = {};
+   if (sortBy && (parseInt(sortType) === 1 || parseInt(sortType) === -1)) {
+      sort[sortBy] = parseInt(sortType);
+   } else {
+      sort["createdAt"] = -1;
+   }
+
+   const videos = await Video.aggregate([
+      {
+         $lookup: {
+            from: "subscriptions",
+            let: { videoOwnerId: "$owner" },
+            pipeline: [
+               {
+                  $match: {
+                     $expr: {
+                        $and: [
+                           { $eq: ["$subscriber", req.user._id] },
+                           { $eq: ["$channel", "$$videoOwnerId"] },
+                        ],
+                     },
+                  },
+               },
+            ],
+            as: "subscriptions",
+         },
+      },
+      {
+         $match: {
+            $and: [{ subscriptions: { $ne: [] } }, match],
+         },
+      },
+      {
+         $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner",
+         },
+      },
+      {
+         $unwind: "$owner",
+      },
+      {
+         $sort: sort,
+      },
+      {
+         $skip: skip,
+      },
+      {
+         $limit: parseInt(limit),
+      },
+      {
+         $project: {
+            _id: 1,
+            videoFile: 1,
+            thumbnail: 1,
+            owner: {
+               _id: 1,
+               username: 1,
+            },
+            title: 1,
+            duration: 1,
+            views: 1,
+            createdAt: 1,
+         },
+      },
+   ]);
+
+   if (!videos?.length) {
+      throw new ApiError(404, "No videos found from your subscribed channels");
+   }
+
+   return res
+      .status(200)
+      .json(
+         new ApiResponse(
+            200,
+            videos,
+            "Successfully fetched videos from subscribed channels"
+         )
+      );
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -364,4 +458,5 @@ module.exports = {
    updateVideoThumbnail,
    deleteVideo,
    togglePublishStatus,
+   getSubscribedChannelsVideos,
 };

@@ -196,6 +196,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          user._id
       );
 
+      console.log("Access token refreshing");
+
       return res
          .status(200)
          .cookie("accessToken", accessToken, options)
