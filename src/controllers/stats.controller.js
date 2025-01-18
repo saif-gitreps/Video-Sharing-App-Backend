@@ -43,9 +43,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
-   const channelId = req.user._id;
-
-   const { page = 1, limit = 10, sortBy, sortType } = req.query;
+   const { page = 1, limit = 6, sortBy, sortType, channelId } = req.params;
 
    const sort = {};
    if (sortBy && (parseInt(sortType) === 1 || parseInt(sortType) === -1)) {
@@ -74,53 +72,29 @@ const getChannelVideos = asyncHandler(async (req, res) => {
       },
       {
          $lookup: {
-            from: "likes",
-            foreignField: "video",
-            localField: "_id",
-            as: "likesOnTheVideo",
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner",
          },
       },
       {
-         $lookup: {
-            from: "comments",
-            foreignField: "video",
-            localField: "_id",
-            as: "commentsOnTheVideo",
-            pipeline: [
-               {
-                  $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
-                     as: "owner",
-                  },
-               },
-               {
-                  $unwind: "$owner",
-               },
-               {
-                  $project: {
-                     _id: 1,
-                     content: 1,
-                     owner: {
-                        _id: 1,
-                        username: 1,
-                        avatar: 1,
-                     },
-                     createdAt: 1,
-                  },
-               },
-            ],
-         },
+         // another way of de constructing the array it seems.
+         $unwind: "$owner",
       },
       {
-         $addFields: {
-            likesCount: { $size: "$likesOnTheVideo" },
-            commentsCount: { $size: "$commentsOnTheVideo" },
+         $project: {
+            _id: 1,
+            videoFile: 1,
+            thumbnail: 1,
+            owner: {
+               _id: 1,
+               username: 1,
+            },
+            title: 1,
+            duration: 1,
+            createdAt: 1,
          },
-      },
-      {
-         $unset: "likesOnTheVideo",
       },
    ]);
 

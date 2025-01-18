@@ -12,7 +12,7 @@ const {
 // task left : add left join for likes and comments on videos.
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 3, query, sortBy, sortType, userId } = req.params;
+   const { page = 1, limit = 3, query, sortBy, sortType, userId, username } = req.params;
 
    // sort types: views, createdAt, duration, title + isPublished videos only.
    const skip = (page - 1) * limit;
@@ -23,6 +23,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
       match[isPublished] = true;
       if (userId) {
          match.owner = new mongoose.Types.ObjectId(userId);
+      }
+      if (username) {
+         match["owner.username"] = username;
       }
    }
 
@@ -74,10 +77,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
          },
       },
    ]);
-
-   if (!videos.length || !videos) {
-      throw new ApiError(404, "No videos found");
-   }
 
    return res
       .status(200)
@@ -162,10 +161,6 @@ const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
          },
       },
    ]);
-
-   if (!videos?.length) {
-      throw new ApiError(404, "No videos found from your subscribed channels");
-   }
 
    return res
       .status(200)

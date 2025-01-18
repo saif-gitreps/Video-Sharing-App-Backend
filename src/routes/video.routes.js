@@ -3,12 +3,11 @@ const videoController = require("../controllers/video.controller");
 const upload = require("../middlewares/multer.middleware");
 const verifyJWT = require("../middlewares/auth.middleware");
 
-router.use(verifyJWT);
-
-//protected routes.
 router.route("/").get(videoController.getAllVideos);
 
-router.route("/subbed-channels").get(videoController.getSubscribedChannelsVideos);
+router.use(verifyJWT);
+
+router.route("/subscriptions").get(videoController.getSubscribedChannelsVideos);
 
 router.route("/").post(
    upload.fields([

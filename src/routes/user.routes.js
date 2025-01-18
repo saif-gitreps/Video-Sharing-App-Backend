@@ -28,7 +28,7 @@ router.route("/logout").post(userController.logoutUser);
 
 router.route("/change-password").post(userController.changeCurrentPassword);
 
-router.route("/current-user").get(userController.getCurrentUser);
+router.route("/me").get(userController.getCurrentUser);
 
 router.route("/update-account").patch(userController.updateAccountDetails);
 
