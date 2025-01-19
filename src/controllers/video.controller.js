@@ -12,11 +12,14 @@ const {
 // task left : add left join for likes and comments on videos.
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 3, query, sortBy, sortType, userId, username } = req.params;
+   const { query, sortBy, sortType, userId, username } = req.params;
 
-   // sort types: views, createdAt, duration, title + isPublished videos only.
+   let { page, limit } = req.query;
+
+   page = parseInt(page) || 1;
+   limit = parseInt(limit) || 6;
+
    const skip = (page - 1) * limit;
-
    const match = {};
    if (query) {
       match.$text = { $search: query };
@@ -33,9 +36,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
    if (sortBy && (parseInt(sortType) === 1 || parseInt(sortType) === -1)) {
       sort[sortBy] = parseInt(sortType);
    } else {
-      // if no sort by was sent, then ill sort it by recent.
       sort["createdAt"] = 1;
    }
+
+   const totalVideos = await Video.countDocuments(match);
 
    const videos = await Video.aggregate([
       {
@@ -48,7 +52,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
          $skip: skip,
       },
       {
-         $limit: limit,
+         $limit: parseInt(limit),
       },
       {
          $lookup: {
@@ -59,7 +63,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
          },
       },
       {
-         // another way of de constructing the array it seems.
          $unwind: "$owner",
       },
       {
@@ -80,11 +83,21 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200, videos, "Successfully fetched videos based on query."));
+      .json(
+         new ApiResponse(
+            200,
+            { videos, totalVideos },
+            "Successfully fetched videos based on query."
+         )
+      );
 });
 
 const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 3, query, sortBy, sortType } = req.params;
+   const { query, sortBy, sortType } = req.params;
+   let { page, limit } = req.query;
+
+   page = parseInt(page) || 1;
+   limit = parseInt(limit) || 6;
 
    const skip = (page - 1) * limit;
 
@@ -99,6 +112,39 @@ const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
    } else {
       sort["createdAt"] = -1;
    }
+
+   // First get the total count using the same match conditions
+   const totalVideosAggregation = await Video.aggregate([
+      {
+         $lookup: {
+            from: "subscriptions",
+            let: { videoOwnerId: "$owner" },
+            pipeline: [
+               {
+                  $match: {
+                     $expr: {
+                        $and: [
+                           { $eq: ["$subscriber", req.user._id] },
+                           { $eq: ["$channel", "$$videoOwnerId"] },
+                        ],
+                     },
+                  },
+               },
+            ],
+            as: "subscriptions",
+         },
+      },
+      {
+         $match: {
+            $and: [{ subscriptions: { $ne: [] } }, match],
+         },
+      },
+      {
+         $count: "total",
+      },
+   ]);
+
+   const totalVideos = totalVideosAggregation[0]?.total || 0;
 
    const videos = await Video.aggregate([
       {
@@ -167,7 +213,7 @@ const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
       .json(
          new ApiResponse(
             200,
-            videos,
+            { videos, totalVideos },
             "Successfully fetched videos from subscribed channels"
          )
       );

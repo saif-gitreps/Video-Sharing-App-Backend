@@ -157,9 +157,43 @@ const deletePost = asyncHandler(async (req, res) => {
 });
 
 const getSubbedChannelsPosts = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 6 } = req.params;
+   let { page, limit } = req.query;
 
+   page = parseInt(page) || 1;
+   limit = parseInt(limit) || 5;
    const skip = (page - 1) * limit;
+
+   const totalPostsAggregation = await Post.aggregate([
+      {
+         $lookup: {
+            from: "subscriptions",
+            let: { postOwnerId: "$owner" },
+            pipeline: [
+               {
+                  $match: {
+                     $expr: {
+                        $and: [
+                           { $eq: ["$subscriber", req.user._id] },
+                           { $eq: ["$channel", "$$postOwnerId"] },
+                        ],
+                     },
+                  },
+               },
+            ],
+            as: "subscriptions",
+         },
+      },
+      {
+         $match: {
+            $or: [{ subscriptions: { $ne: [] } }, { owner: { $eq: req.user._id } }],
+         },
+      },
+      {
+         $count: "total",
+      },
+   ]);
+
+   const totalPosts = totalPostsAggregation[0]?.total || 0;
 
    const posts = await Post.aggregate([
       {
@@ -181,7 +215,6 @@ const getSubbedChannelsPosts = asyncHandler(async (req, res) => {
             as: "subscriptions",
          },
       },
-      // Only keep posts where there is at least one matching subscription
       {
          $match: {
             $or: [{ subscriptions: { $ne: [] } }, { owner: { $eq: req.user._id } }],
@@ -199,6 +232,15 @@ const getSubbedChannelsPosts = asyncHandler(async (req, res) => {
          $unwind: "$ownerDetails",
       },
       {
+         $sort: { createdAt: -1 },
+      },
+      {
+         $skip: skip,
+      },
+      {
+         $limit: parseInt(limit),
+      },
+      {
          $project: {
             _id: 1,
             content: 1,
@@ -211,18 +253,11 @@ const getSubbedChannelsPosts = asyncHandler(async (req, res) => {
             updatedAt: 1,
          },
       },
-      {
-         $sort: { createdAt: 1 },
-      },
-      {
-         $skip: skip,
-      },
-      {
-         $limit: limit,
-      },
    ]);
 
-   return res.status(200).json(new ApiResponse(200, posts, "Posts fetched successfully"));
+   return res
+      .status(200)
+      .json(new ApiResponse(200, { posts, totalPosts }, "Posts fetched successfully"));
 });
 
 module.exports = {
