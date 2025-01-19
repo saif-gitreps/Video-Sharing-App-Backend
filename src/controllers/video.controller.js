@@ -8,6 +8,7 @@ const {
    deleteFromCloudinary,
    retrievePublicIdFromUrl,
 } = require("../utils/cloudinary");
+const User = require("../models/user.model");
 
 // task left : add left join for likes and comments on videos.
 
@@ -269,8 +270,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideo = asyncHandler(async (req, res) => {
    const { videoId } = req.params;
 
-   // task left in this controller: after making likes and comments controller , convert the result to
-   // object.
    const video = await Video.aggregate([
       {
          $match: {
@@ -287,7 +286,6 @@ const getVideo = asyncHandler(async (req, res) => {
             pipeline: [
                {
                   $project: {
-                     _id: 1,
                      username: 1,
                      avatar: 1,
                   },
@@ -301,7 +299,6 @@ const getVideo = asyncHandler(async (req, res) => {
             foreignField: "video",
             localField: "_id",
             as: "commentsOnTheVideo",
-            // wont undwind this cuz i need the array of comments.
             pipeline: [
                {
                   $lookup: {
@@ -309,6 +306,14 @@ const getVideo = asyncHandler(async (req, res) => {
                      localField: "owner",
                      foreignField: "_id",
                      as: "owner",
+                     pipeline: [
+                        {
+                           $project: {
+                              username: 1,
+                              avatar: 1,
+                           },
+                        },
+                     ],
                   },
                },
                {
@@ -316,13 +321,8 @@ const getVideo = asyncHandler(async (req, res) => {
                },
                {
                   $project: {
-                     _id: 1,
                      content: 1,
-                     owner: {
-                        _id: 1,
-                        username: 1,
-                        avatar: 1,
-                     },
+                     owner: 1,
                      createdAt: 1,
                   },
                },
@@ -335,20 +335,28 @@ const getVideo = asyncHandler(async (req, res) => {
             foreignField: "video",
             localField: "_id",
             as: "likesOnTheVideo",
+            pipeline: [
+               {
+                  $count: "total",
+               },
+            ],
          },
       },
       {
          $addFields: {
-            owner: {
-               $first: "$owner",
-            },
+            owner: { $first: "$owner" },
             numberOfLikes: {
-               $size: "$likesOnTheVideo",
+               $first: {
+                  $ifNull: [{ $first: "$likesOnTheVideo.total" }, 0],
+               },
+            },
+            isLiked: {
+               $in: [userId, "$likesOnTheVideo.user"],
             },
          },
       },
       {
-         $unset: "likesOnTheVideo",
+         $unset: ["likesOnTheVideo"],
       },
    ]);
 
@@ -493,6 +501,121 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, video, "Video publicity toggled successfully."));
 });
 
+const getReelVideo = asyncHandler(async (req, res) => {
+   const userId = req.user._id;
+   const user = await User.findById(userId);
+
+   if (!user) {
+      throw new ApiError(404, "No such user exists.");
+   }
+
+   const video = await Video.aggregate([
+      {
+         $match: {
+            _id: { $nin: user.watchHistory },
+            isPublished: true,
+         },
+      },
+      {
+         $sample: { size: 1 },
+      },
+      {
+         $lookup: {
+            from: "users",
+            foreignField: "_id",
+            localField: "owner",
+            as: "owner",
+            pipeline: [
+               {
+                  $project: {
+                     username: 1,
+                     avatar: 1,
+                  },
+               },
+            ],
+         },
+      },
+      {
+         $lookup: {
+            from: "comments",
+            foreignField: "video",
+            localField: "_id",
+            as: "commentsOnTheVideo",
+            pipeline: [
+               {
+                  $lookup: {
+                     from: "users",
+                     localField: "owner",
+                     foreignField: "_id",
+                     as: "owner",
+                     pipeline: [
+                        {
+                           $project: {
+                              username: 1,
+                              avatar: 1,
+                           },
+                        },
+                     ],
+                  },
+               },
+               {
+                  $unwind: "$owner",
+               },
+               {
+                  $project: {
+                     content: 1,
+                     owner: 1,
+                     createdAt: 1,
+                  },
+               },
+            ],
+         },
+      },
+      {
+         $lookup: {
+            from: "likes",
+            foreignField: "video",
+            localField: "_id",
+            as: "likesOnTheVideo",
+            pipeline: [
+               {
+                  $count: "total",
+               },
+            ],
+         },
+      },
+      {
+         $addFields: {
+            owner: { $first: "$owner" },
+            numberOfLikes: {
+               $first: {
+                  $ifNull: [{ $first: "$likesOnTheVideo.total" }, 0],
+               },
+            },
+            isLiked: {
+               $in: [userId, "$likesOnTheVideo.user"],
+            },
+         },
+      },
+      {
+         $unset: ["likesOnTheVideo"],
+      },
+   ]);
+
+   if (!video.length) {
+      // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
+      await User.findByIdAndUpdate(userId, {
+         $set: {
+            watchHistory: [],
+         },
+      });
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, video[0], "Video fetched successfully"));
+});
+
 module.exports = {
    getAllVideos,
    publishAVideo,
@@ -502,4 +625,5 @@ module.exports = {
    deleteVideo,
    togglePublishStatus,
    getSubscribedChannelsVideos,
+   getReelVideo,
 };

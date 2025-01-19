@@ -24,6 +24,7 @@ router.route("/").post(
 );
 
 router.route("/:videoId").get(videoController.getVideo);
+router.route("/reel").get(videoController.getReelVideo);
 router.route("/:videoId").delete(videoController.deleteVideo);
 router
    .route("/:videoId")
