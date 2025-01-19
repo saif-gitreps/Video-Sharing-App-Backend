@@ -458,6 +458,32 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, user[0].watchHistory, "Fetched watch history"));
 });
 
+const updateWatchHistory = asyncHandler(async (req, res) => {
+   const { videos } = req.body;
+   const userId = req.user._id;
+
+   await User.findByIdAndUpdate(userId, {
+      $push: {
+         watchHistory: { $each: videos },
+      },
+   });
+
+   return res.status(200).json(new ApiResponse(200, {}, "Updated watch history"));
+});
+
+const deleteVideoFromHistory = asyncHandler(async (req, res) => {
+   const { videoId } = req.body;
+   const userId = req.user._id;
+
+   await User.findByIdAndUpdate(userId, {
+      $pull: {
+         watchHistory: videoId,
+      },
+   });
+
+   return res.status(200).json(new ApiResponse(200, {}, "Video removed from history"));
+});
+
 module.exports = {
    register,
    loginUser,
@@ -470,4 +496,6 @@ module.exports = {
    updateUserCoverImage,
    getUserChannelProfile,
    getWatchHistory,
+   updateWatchHistory,
+   deleteVideoFromHistory,
 };

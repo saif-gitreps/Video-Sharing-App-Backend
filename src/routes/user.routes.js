@@ -42,4 +42,8 @@ router.route("/channel/:username").get(userController.getUserChannelProfile);
 
 router.route("/history").get(userController.getWatchHistory);
 
+router.route("/history").put(userController.updateWatchHistory);
+
+router.route("/history").delete(userController.deleteVideoFromHistory);
+
 module.exports = router;
