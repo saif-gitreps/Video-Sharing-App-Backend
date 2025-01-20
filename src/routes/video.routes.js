@@ -5,6 +5,8 @@ const verifyJWT = require("../middlewares/auth.middleware");
 
 router.route("/").get(videoController.getAllVideos);
 
+router.route("/:videoId").get(videoController.getVideo);
+
 router.use(verifyJWT);
 
 router.route("/subscriptions").get(videoController.getSubscribedChannelsVideos);
@@ -23,8 +25,6 @@ router.route("/").post(
    videoController.publishAVideo
 );
 
-router.route("/:videoId").get(videoController.getVideo);
-router.route("/reel").get(videoController.getReelVideo);
 router.route("/:videoId").delete(videoController.deleteVideo);
 router
    .route("/:videoId")
@@ -33,5 +33,7 @@ router
 router.route("/update-details/:videoId").patch(videoController.updateVideoDetails);
 
 router.route("/toggle/publish/:videoId").patch(videoController.togglePublishStatus);
+
+router.route("/reel/random").get(videoController.getReelVideo);
 
 module.exports = router;

@@ -346,17 +346,12 @@ const getVideo = asyncHandler(async (req, res) => {
          $addFields: {
             owner: { $first: "$owner" },
             numberOfLikes: {
-               $first: {
-                  $ifNull: [{ $first: "$likesOnTheVideo.total" }, 0],
-               },
-            },
-            isLiked: {
-               $in: [userId, "$likesOnTheVideo.user"],
+               $size: "$likesOnTheVideo",
             },
          },
       },
       {
-         $unset: ["likesOnTheVideo"],
+         $unset: "likesOnTheVideo",
       },
    ]);
 
@@ -503,18 +498,26 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
 const getReelVideo = asyncHandler(async (req, res) => {
    const userId = req.user._id;
-   const user = await User.findById(userId);
 
-   if (!user) {
-      throw new ApiError(404, "No such user exists.");
+   const match = {
+      isPublished: true,
+   };
+
+   if (userId) {
+      const user = await User.findById(new mongoose.Types.ObjectId(userId));
+
+      if (user) {
+         const watchHistoryIds = user.watchHistory?.length
+            ? user.watchHistory.map((id) => new mongoose.Types.ObjectId(id))
+            : [];
+
+         match._id = { $nin: watchHistoryIds };
+      }
    }
 
    const video = await Video.aggregate([
       {
-         $match: {
-            _id: { $nin: user.watchHistory },
-            isPublished: true,
-         },
+         $match: match,
       },
       {
          $sample: { size: 1 },
@@ -588,27 +591,26 @@ const getReelVideo = asyncHandler(async (req, res) => {
          $addFields: {
             owner: { $first: "$owner" },
             numberOfLikes: {
-               $first: {
-                  $ifNull: [{ $first: "$likesOnTheVideo.total" }, 0],
-               },
-            },
-            isLiked: {
-               $in: [userId, "$likesOnTheVideo.user"],
+               $size: "$likesOnTheVideo",
             },
          },
       },
       {
-         $unset: ["likesOnTheVideo"],
+         $unset: "likesOnTheVideo",
       },
    ]);
 
-   if (!video.length) {
+   if (video.length === 0) {
       // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
       await User.findByIdAndUpdate(userId, {
          $set: {
             watchHistory: [],
          },
       });
+   }
+
+   if (!video || !video.length) {
+      throw new ApiError(404, "something went wrongs");
    }
 
    return res

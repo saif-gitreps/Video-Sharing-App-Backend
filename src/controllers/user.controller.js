@@ -462,7 +462,7 @@ const updateWatchHistory = asyncHandler(async (req, res) => {
    const { videos } = req.body;
    const userId = req.user._id;
 
-   await User.findByIdAndUpdate(userId, {
+   await User.findByIdAndUpdate(new mongoose.Types.ObjectId(userId), {
       $push: {
          watchHistory: { $each: videos },
       },
