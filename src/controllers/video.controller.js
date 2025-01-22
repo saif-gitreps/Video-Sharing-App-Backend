@@ -201,7 +201,7 @@ const getSubscribedChannelsVideos = asyncHandler(async (req, res) => {
             owner: {
                _id: 1,
                username: 1,
-               avatar,
+               avatar: 1,
             },
             title: 1,
             duration: 1,
@@ -600,14 +600,14 @@ const getReelVideo = asyncHandler(async (req, res) => {
       },
    ]);
 
-   // if (video.length === 0) {
-   //    // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
-   //    await User.findByIdAndUpdate(userId, {
-   //       $set: {
-   //          watchHistory: [],
-   //       },
-   //    });
-   // }
+   if (video.length <= 1) {
+      // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
+      await User.findByIdAndUpdate(userId, {
+         $set: {
+            watchHistory: [],
+         },
+      });
+   }
 
    if (!video || !video.length) {
       throw new ApiError(404, "No more videos");

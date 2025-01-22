@@ -9,8 +9,6 @@ router.route("/:videoId").get(videoController.getVideo);
 
 router.use(verifyJWT);
 
-router.route("/subscriptions").get(videoController.getSubscribedChannelsVideos);
-
 router.route("/").post(
    upload.fields([
       {
@@ -26,9 +24,12 @@ router.route("/").post(
 );
 
 router.route("/:videoId").delete(videoController.deleteVideo);
+
 router
    .route("/:videoId")
    .patch(upload.single("thumbnail"), videoController.updateVideoThumbnail);
+
+router.route("/subscriptions/all").get(videoController.getSubscribedChannelsVideos);
 
 router.route("/update-details/:videoId").patch(videoController.updateVideoDetails);
 

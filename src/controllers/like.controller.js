@@ -132,6 +132,21 @@ const likeUnlikeVideo = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, videoToLike, "Like on the video toggled successfully"));
 });
 
+const isLiked = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+   const userId = req.user._id;
+
+   const isLiked = await Like.findOne({
+      $and: [{ video: videoId }, { likedBy: userId }],
+   });
+
+   return res
+      .status(200)
+      .json(
+         new ApiResponse(200, isLiked ? true : false, "Like status fetched successfully")
+      );
+});
+
 const likeUnlikePost = asyncHandler(async (req, res) => {
    const { postId } = req.params;
 
@@ -184,6 +199,7 @@ module.exports = {
    getLikedVideos,
    getLikedPosts,
    likeUnlikeVideo,
+   isLiked,
    likeUnlikePost,
    likeUnlikeComment,
 };

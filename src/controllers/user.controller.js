@@ -239,18 +239,16 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
    // will add more fields according to the frontend.
-   const { fullname, username } = req.body;
-
-   if (!fullname || !username) {
-      throw new ApiError(400, "Please dont fields empty");
-   }
+   const { fullname, username, watchHistory, email } = req.body;
 
    const updatedUser = await User.findByIdAndUpdate(
       req.user?._id,
       {
          $set: {
-            fullname: fullname,
-            username: username,
+            fullname,
+            username,
+            watchHistory,
+            email,
          },
       },
       {
@@ -460,6 +458,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
 const updateWatchHistory = asyncHandler(async (req, res) => {
    const userId = req.user._id;
+   const { videoId } = req.body;
 
    await User.findByIdAndUpdate(new mongoose.Types.ObjectId(userId), {
       $addToSet: { watchHistory: videoId },
