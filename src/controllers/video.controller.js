@@ -294,64 +294,7 @@ const getVideo = asyncHandler(async (req, res) => {
          },
       },
       {
-         $lookup: {
-            from: "comments",
-            foreignField: "video",
-            localField: "_id",
-            as: "commentsOnTheVideo",
-            pipeline: [
-               {
-                  $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
-                     as: "owner",
-                     pipeline: [
-                        {
-                           $project: {
-                              username: 1,
-                              avatar: 1,
-                           },
-                        },
-                     ],
-                  },
-               },
-               {
-                  $unwind: "$owner",
-               },
-               {
-                  $project: {
-                     content: 1,
-                     owner: 1,
-                     createdAt: 1,
-                  },
-               },
-            ],
-         },
-      },
-      {
-         $lookup: {
-            from: "likes",
-            foreignField: "video",
-            localField: "_id",
-            as: "likesOnTheVideo",
-            pipeline: [
-               {
-                  $count: "total",
-               },
-            ],
-         },
-      },
-      {
-         $addFields: {
-            owner: { $first: "$owner" },
-            numberOfLikes: {
-               $size: "$likesOnTheVideo",
-            },
-         },
-      },
-      {
-         $unset: "likesOnTheVideo",
+         $unwind: "$owner",
       },
    ]);
 
@@ -539,68 +482,11 @@ const getReelVideo = asyncHandler(async (req, res) => {
          },
       },
       {
-         $lookup: {
-            from: "comments",
-            foreignField: "video",
-            localField: "_id",
-            as: "commentsOnTheVideo",
-            pipeline: [
-               {
-                  $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
-                     as: "owner",
-                     pipeline: [
-                        {
-                           $project: {
-                              username: 1,
-                              avatar: 1,
-                           },
-                        },
-                     ],
-                  },
-               },
-               {
-                  $unwind: "$owner",
-               },
-               {
-                  $project: {
-                     content: 1,
-                     owner: 1,
-                     createdAt: 1,
-                  },
-               },
-            ],
-         },
-      },
-      {
-         $lookup: {
-            from: "likes",
-            foreignField: "video",
-            localField: "_id",
-            as: "likesOnTheVideo",
-            pipeline: [
-               {
-                  $count: "total",
-               },
-            ],
-         },
-      },
-      {
-         $addFields: {
-            owner: { $first: "$owner" },
-            numberOfLikes: {
-               $size: "$likesOnTheVideo",
-            },
-         },
-      },
-      {
-         $unset: "likesOnTheVideo",
+         $unwind: "$owner",
       },
    ]);
 
-   if (video.length <= 1) {
+   if (video.length <= 1 && userId) {
       // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
       await User.findByIdAndUpdate(userId, {
          $set: {

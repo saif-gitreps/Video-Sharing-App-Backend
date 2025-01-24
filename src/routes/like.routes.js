@@ -2,6 +2,8 @@ const router = require("express").Router();
 const verifyJWT = require("../middlewares/auth.middleware");
 const likeControllers = require("../controllers/like.controller");
 
+router.route("/video/:videoId").get(likeControllers.getLikesOnAVideo);
+
 router.use(verifyJWT);
 
 router.route("/toggle/video/:videoId").post(likeControllers.likeUnlikeVideo);

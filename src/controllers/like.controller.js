@@ -195,10 +195,25 @@ const likeUnlikeComment = asyncHandler(async (req, res) => {
       );
 });
 
+const getLikesOnAVideo = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+
+   const likes = await Like.find({
+      video: new mongoose.Types.ObjectId(videoId),
+   });
+
+   const likesCount = likes.length;
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, likesCount, "Likes on the video fetched successfully"));
+});
+
 module.exports = {
    getLikedVideos,
    getLikedPosts,
    likeUnlikeVideo,
+   getLikesOnAVideo,
    isLiked,
    likeUnlikePost,
    likeUnlikeComment,
