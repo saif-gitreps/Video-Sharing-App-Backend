@@ -13,23 +13,32 @@ const User = require("../models/user.model");
 // task left : add left join for likes and comments on videos.
 
 const getAllVideos = asyncHandler(async (req, res) => {
-   const { query, sortBy, sortType, userId, username } = req.params;
-
-   let { page, limit } = req.query;
+   let { page, limit, query, sortBy, sortType, userId, username } = req.query;
 
    page = parseInt(page) || 1;
    limit = parseInt(limit) || 6;
 
    const skip = (page - 1) * limit;
-   const match = {};
+   const match = {
+      isPublished: true,
+   };
+
    if (query) {
       match.$text = { $search: query };
-      match[isPublished] = true;
-      if (userId) {
-         match.owner = new mongoose.Types.ObjectId(userId);
-      }
-      if (username) {
-         match["owner.username"] = username;
+   }
+
+   if (userId) {
+      match.owner = mongoose.Types.ObjectId(userId);
+   } else if (username) {
+      const user = await User.findOne({ username });
+      if (user) {
+         match.owner = user._id;
+      } else {
+         return res
+            .status(200)
+            .json(
+               new ApiResponse(200, { videos: [], totalVideos: 0 }, "No videos found.")
+            );
       }
    }
 
@@ -76,6 +85,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                username: 1,
                avatar: 1,
             },
+            views: 1,
             title: 1,
             duration: 1,
             createdAt: 1,

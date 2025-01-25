@@ -405,6 +405,16 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
+   let { page, limit } = req.query;
+
+   page = parseInt(page) || 1;
+   limit = parseInt(limit) || 10;
+   const skip = (page - 1) * limit;
+
+   const totalWatchHistoryItems = await User.findById(req.user._id).select(
+      "watchHistory"
+   );
+
    const user = await User.aggregate([
       {
          $match: {
@@ -431,7 +441,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                         {
                            $project: {
                               username: 1,
-                              fullname: 1,
                               avatar: 1,
                            },
                         },
@@ -446,14 +455,40 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                      },
                   },
                },
+               {
+                  $project: {
+                     _id: 1,
+                     title: 1,
+                     description: 1,
+                     thumbnail: 1,
+                     owner: 1,
+                  },
+               },
             ],
          },
       },
+      {
+         $project: {
+            watchHistory: {
+               $slice: ["$watchHistory", skip, limit],
+            },
+         },
+      },
+      {
+         $unwind: "$watchHistory",
+      },
    ]);
 
-   return res
-      .status(200)
-      .json(new ApiResponse(200, user[0].watchHistory, "Fetched watch history"));
+   return res.status(200).json(
+      new ApiResponse(
+         200,
+         {
+            watchHistory: user,
+            totalWatchHistoryItems: totalWatchHistoryItems.length,
+         },
+         "Fetched watch history"
+      )
+   );
 });
 
 const updateWatchHistory = asyncHandler(async (req, res) => {

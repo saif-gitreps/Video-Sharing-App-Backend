@@ -59,24 +59,21 @@ const getCommentsOnVideo = asyncHandler(async (req, res) => {
             localField: "owner",
             foreignField: "_id",
             as: "owner",
+            pipeline: [
+               {
+                  $project: {
+                     _id: 1,
+                     username: 1,
+                     avatar: 1,
+                  },
+               },
+            ],
          },
       },
       {
          $unwind: "$owner",
       },
-      {
-         // well i guess this is better than nested piplines
-         $project: {
-            "owner._id": 1,
-            "owner.username": 1,
-            "owner.avatar": 1,
-         },
-      },
    ]);
-
-   if (!comments) {
-      throw new ApiError(404, "No comments found");
-   }
 
    return res
       .status(200)

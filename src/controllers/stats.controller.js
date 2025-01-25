@@ -43,23 +43,39 @@ const getChannelStats = asyncHandler(async (req, res) => {
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
-   const { page = 1, limit = 6, sortBy, sortType, channelId } = req.params;
+   const { query, sortBy, sortType, userId, username } = req.params;
+
+   let { page, limit } = req.query;
+
+   page = parseInt(page) || 1;
+   limit = parseInt(limit) || 6;
+
+   const skip = (page - 1) * limit;
+
+   const match = {};
+   if (query) {
+      match.$text = { $search: query };
+      match[isPublished] = true;
+      if (userId) {
+         match.owner = new mongoose.Types.ObjectId(userId);
+      }
+      if (username) {
+         match["owner.username"] = username;
+      }
+   }
 
    const sort = {};
    if (sortBy && (parseInt(sortType) === 1 || parseInt(sortType) === -1)) {
       sort[sortBy] = parseInt(sortType);
    } else {
-      // if no sort by was sent, then ill sort it by recent.
       sort["createdAt"] = 1;
    }
 
-   const skip = (page - 1) * limit;
+   const totalVideos = await Video.countDocuments(match);
 
    const videos = await Video.aggregate([
       {
-         $match: {
-            owner: new mongoose.Types.ObjectId(channelId),
-         },
+         $match: match,
       },
       {
          $sort: sort,
@@ -68,7 +84,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
          $skip: skip,
       },
       {
-         $limit: limit,
+         $limit: parseInt(limit),
       },
       {
          $lookup: {
@@ -79,7 +95,6 @@ const getChannelVideos = asyncHandler(async (req, res) => {
          },
       },
       {
-         // another way of de constructing the array it seems.
          $unwind: "$owner",
       },
       {
@@ -90,7 +105,9 @@ const getChannelVideos = asyncHandler(async (req, res) => {
             owner: {
                _id: 1,
                username: 1,
+               avatar: 1,
             },
+            views: 1,
             title: 1,
             duration: 1,
             createdAt: 1,
@@ -100,7 +117,13 @@ const getChannelVideos = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200, videos, "Channel videos fetched successfully"));
+      .json(
+         new ApiResponse(
+            200,
+            { videos, totalVideos },
+            "Channel videos fetched successfully"
+         )
+      );
 });
 
 module.exports = {
