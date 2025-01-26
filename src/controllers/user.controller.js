@@ -368,9 +368,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             subscribersCount: {
                $size: "$subscribers",
             },
-            channelsSubscribedToCount: {
-               $size: "$subscribedTo",
-            },
             isSubscribed: {
                $cond: {
                   // if the guy checking out the channel is subscribed to the guy getting checked out.
@@ -383,14 +380,13 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
       {
          $project: {
+            _id: 1,
             fullname: 1,
             username: 1,
             subscribersCount: 1,
-            channelsSubscribedToCount: 1,
             isSubscribed: 1,
             avatar: 1,
             coverImage: 1,
-            email: 1,
          },
       },
    ]);
@@ -462,6 +458,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                      description: 1,
                      thumbnail: 1,
                      owner: 1,
+                     createdAt: 1,
                   },
                },
             ],
@@ -474,16 +471,13 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             },
          },
       },
-      {
-         $unwind: "$watchHistory",
-      },
    ]);
 
    return res.status(200).json(
       new ApiResponse(
          200,
          {
-            watchHistory: user,
+            watchHistory: user[0].watchHistory,
             totalWatchHistoryItems: totalWatchHistoryItems.length,
          },
          "Fetched watch history"
@@ -495,9 +489,7 @@ const updateWatchHistory = asyncHandler(async (req, res) => {
    const userId = req.user._id;
    const { videoId } = req.body;
 
-   await User.findByIdAndUpdate(new mongoose.Types.ObjectId(userId), {
-      $addToSet: { watchHistory: videoId },
-   });
+   await User.findByIdAndUpdate(userId, { $addToSet: { watchHistory: videoId } });
 
    return res.status(200).json(new ApiResponse(200, {}, "Updated watch history"));
 });

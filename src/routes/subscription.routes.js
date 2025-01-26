@@ -6,7 +6,9 @@ router.use(verifyJWT);
 
 router.route("/channel/:channelId").get(subscriptionControllers.getSubscribedUsers);
 
-router.route("/user/:channelId").post(subscriptionControllers.subOrUnsubAchannel);
+router.route("/is-subscribed/:channelId").get(subscriptionControllers.isSubscribed);
+
+router.route("/:channelId").post(subscriptionControllers.subOrUnsubAchannel);
 
 router.route("/user/:userId").get(subscriptionControllers.getSubscribedChannel);
 

@@ -21,6 +21,8 @@ router.route("/login").post(userController.loginUser);
 
 router.route("/refresh-token").post(userController.refreshAccessToken);
 
+router.route("/channel/:username").get(userController.getUserChannelProfile);
+
 // protected routes
 router.use(verifyJWT);
 
@@ -37,8 +39,6 @@ router.route("/avatar").patch(upload.single("avatar"), userController.updateUser
 router
    .route("/cover-image")
    .patch(upload.single("coverImage"), userController.updateUserCoverImage);
-
-router.route("/channel/:username").get(userController.getUserChannelProfile);
 
 router.route("/history").get(userController.getWatchHistory);
 

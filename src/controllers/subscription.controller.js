@@ -53,8 +53,27 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, channels, "Subscribed channels fetched successfully"));
 });
 
+const isSubscribed = asyncHandler(async (req, res) => {
+   const { channelId } = req.params;
+
+   const channelToSubscribe = await Subscription.findOne({
+      $and: [{ channel: channelId }, { subscriber: req.user?._id }],
+   });
+
+   return res
+      .status(200)
+      .json(
+         new ApiResponse(
+            200,
+            !!channelToSubscribe,
+            "Channel subscription status fetched successfully"
+         )
+      );
+});
+
 module.exports = {
    subOrUnsubAchannel,
    getSubscribedUsers,
    getSubscribedChannel,
+   isSubscribed,
 };
