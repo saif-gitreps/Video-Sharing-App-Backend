@@ -496,7 +496,7 @@ const getReelVideo = asyncHandler(async (req, res) => {
       },
    ]);
 
-   if (video.length <= 1 && userId) {
+   if (video.length === 0 && userId) {
       // if my guy has watched all the videos then reset his watchHistory lmao get a life bro.
       await User.findByIdAndUpdate(userId, {
          $set: {
