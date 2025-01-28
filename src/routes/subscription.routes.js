@@ -10,6 +10,6 @@ router.route("/is-subscribed/:channelId").get(subscriptionControllers.isSubscrib
 
 router.route("/:channelId").post(subscriptionControllers.subOrUnsubAchannel);
 
-router.route("/user/:userId").get(subscriptionControllers.getSubscribedChannel);
+router.route("/channels/subscribed").get(subscriptionControllers.getSubscribedChannel);
 
 module.exports = router;

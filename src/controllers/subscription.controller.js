@@ -1,6 +1,7 @@
 const asyncHandler = require("../utils/async-handler");
 const Subscription = require("../models/subscription.model");
 const ApiResponse = require("../utils/ApiResponse");
+const { create } = require("../models/user.model");
 
 const subOrUnsubAchannel = asyncHandler(async (req, res) => {
    const { channelId } = req.params;
@@ -42,11 +43,29 @@ const getSubscribedUsers = asyncHandler(async (req, res) => {
 });
 
 const getSubscribedChannel = asyncHandler(async (req, res) => {
-   const { userId } = req.params;
+   const userId = req.user._id;
 
-   const channels = await Subscription.find({
-      subscriber: userId,
-   });
+   const channels = await Subscription.aggregate([
+      { $match: { subscriber: userId } },
+      {
+         $lookup: {
+            from: "users",
+            localField: "channel",
+            foreignField: "_id",
+            as: "channel",
+         },
+      },
+      { $unwind: "$channel" },
+      {
+         $project: {
+            _id: "$channel._id",
+            username: "$channel.username",
+            fullname: "$channel.fullname",
+            avatar: "$channel.avatar",
+            createdAt: 1,
+         },
+      },
+   ]);
 
    return res
       .status(200)
