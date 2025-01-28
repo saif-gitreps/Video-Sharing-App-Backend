@@ -18,8 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// task : throw api in controllers wherever necessary like creation etc.
-// task : add pagination at the end of all the aggregate functions
 const userRoutes = require("./routes/user.routes");
 const videoRoutes = require("./routes/video.routes");
 const postRoutes = require("./routes/post.routes");

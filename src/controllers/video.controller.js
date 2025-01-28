@@ -46,7 +46,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
    if (sortBy && (parseInt(sortType) === 1 || parseInt(sortType) === -1)) {
       sort[sortBy] = parseInt(sortType);
    } else {
-      sort["createdAt"] = 1;
+      sort["createdAt"] = -1;
    }
 
    const totalVideos = await Video.countDocuments(match);
